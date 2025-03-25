@@ -43,5 +43,3 @@ JSON_KEYS_PATH = '/path/to/your/service_account/json-key-file'
 credentials = service_account.Credentials.from_service_account_file(JSON_KEYS_PATH)
 bq_client = bq.Client(credentials=credentials, project=credentials.project_id)
 ```
-
----
