@@ -10,7 +10,7 @@ A library containing useful functions for interacting with Google Cloud Platform
 
 ---
 
-## Module: ```pygcp.bigquery```
+## ```pygcp.bigquery```
 
 **Functions for interacting with Google BigQuery**
 
@@ -42,7 +42,7 @@ bq_client = bq.Client(credentials=credentials, project=credentials.project_id)
 
 ---
 
-## Module: ```pygcp.google-drive```
+## ```pygcp.google-drive```
 
 **Functions for interacting with Google Drive**
 
