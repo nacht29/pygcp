@@ -30,6 +30,7 @@ def bq_to_df(bq_client, sql_script:str):
 
 # read 1 SQL script and query BQ
 # slice the queried data into multiple ver of xlsx files
+# returns the excel buffer for read data
 def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str):
 	if not 0 < slice_row <= 1000000:
 		raise SliceError('Invalid slice length.')
@@ -59,7 +60,7 @@ def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str):
 
 	return excel_buffers
 
-def bq_to_csv(bq_client, sql_script: str, slice_row: int, outfile_name: str):
+def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str):
 	if not 0 < slice_row <= 1000000:
 		raise SliceError('Invalid slice length.')
 
@@ -89,9 +90,9 @@ BigQuery - Load to BQ
 
 def df_to_bq(bq_client, df, table_path:str, mode:str):
 	if mode == 'a':
-		write_dispos = 'WRITE_APPEND'
+		write_disposition = 'WRITE_APPEND'
 	elif mode == 't':
-		write_dispos="WRITE_TRUNCATE"
+		write_disposition ="WRITE_TRUNCATE"
 	else:
 		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
 
@@ -99,19 +100,11 @@ def df_to_bq(bq_client, df, table_path:str, mode:str):
 	job = bq_client.load_table_from_dataframe(df, table_path, job_config=job_config)
 	return job.result()
 
-def local_csv_to_bq(bq_client, bucket_csv_path: str, project_id:str, dataset:str, table:str, mode:str):
-	if mode == 'a':
-		write_dispos = 'WRITE_APPEND'
-	elif mode == 't':
-		write_dispos="WRITE_TRUNCATE"
-	else:
-		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
-
 def bucket_csv_to_bq(bq_client, bucket_csv_path: str, project_id:str, dataset:str, table:str, mode:str):
 	if mode == 'a':
-		write_dispos = 'WRITE_APPEND'
+		write_disposition = 'WRITE_APPEND'
 	elif mode == 't':
-		write_dispos="WRITE_TRUNCATE"
+		write_disposition ="WRITE_TRUNCATE"
 	else:
 		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
 	
@@ -119,59 +112,36 @@ def bucket_csv_to_bq(bq_client, bucket_csv_path: str, project_id:str, dataset:st
 		source_format=bq.SourceFormat.CSV,
 		skip_leading_rows=1,
 		autodetect=True,
-		write_disposition=write_dispos
+		write_disposition=write_disposition
 	)
 
 	uri = f'gs://{bucket_csv_path}/csv name'
 	job = bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
 	job.result()
 
-def gdrive_csv_to_bq(bq_client, drive_csv_path: str, project_id:str, dataset:str, table:str, mode:str):
+def bucket_excel_to_bq(bq_client, bucket_excel_path:str, project_id:str, dataset:str, table:str, mode:str):
 	if mode == 'a':
-		write_dispos = 'WRITE_APPEND'
+		write_disposition = 'WRITE_APPEND'
 	elif mode == 't':
-		write_dispos="WRITE_TRUNCATE"
-	else:
-		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
-
-	job_config = bq.LoadJobConfig(
-		source_format=bq.SourceFormat.CSV,
-		skip_leading_rows=1,
-		autodetect=True,
-		write_disposition=write_dispos
-	)
-
-def local_excel_to_bq(bq_client, bucket_csv_path: str, project_id:str, dataset:str, table:str, mode:str):
-	if mode == 'a':
-		write_dispos = 'WRITE_APPEND'
-	elif mode == 't':
-		write_dispos="WRITE_TRUNCATE"
-	else:
-		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
-
-def bucket_excel_to_bq(bq_client, bucket_excel_path: str, project_id:str, dataset:str, table:str, mode:str):
-	if mode == 'a':
-		write_dispos = 'WRITE_APPEND'
-	elif mode == 't':
-		write_dispos="WRITE_TRUNCATE"
+		write_disposition ="WRITE_TRUNCATE"
 	else:
 		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
 	
 	job_config = bq.LoadJobConfig(
-		source_format=bq.SourceFormat.CSV,
+		source_format=bq.SourceFormat.XLSX,
 		skip_leading_rows=1,
 		autodetect=True,
-		write_disposition=write_dispos
+		write_disposition=write_disposition
 	)
 
-	uri = f'gs://{bucket_excel_path}/csv name'
+	uri = f'gs://{bucket_excel_path}'
 	job = bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
 	job.result()
 
-def gdrive_excel_to_bq(bq_client, bucket_excel_path: str, project_id:str, dataset:str, table:str, mode:str):
-	if mode == 'a':
-		write_dispos = 'WRITE_APPEND'
-	elif mode == 't':
-		write_dispos="WRITE_TRUNCATE"
-	else:
-		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
+'''
+- Local excel/csv to bq:
+just read the files, write data to df, and use df_to_bq()
+
+- drive files:
+use drive_filetype_to_df(), then use df_to_bq()
+'''

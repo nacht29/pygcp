@@ -14,6 +14,46 @@ def build_drive_service(service_account:str, scope:str):
 	creds = service_account.Credentials.from_service_account_file(service_account, scopes=scope)
 	service = build('drive', 'v3', credentials=creds)
 
+def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
+	query = f"""
+	'{dst_folder_id}' in parents
+	and name='{out_filename}'
+	and trashed=false
+	"""
+
+	results = service.files().list(
+			q=query,
+			fields='files(id, name)',
+			supportsAllDrives=True
+	).execute()
+
+	# get dup file id
+	dup_files = results.get('files')
+
+	return dup_files
+
+def drive_create_file(service, file_metadata:dict, media, log=False):
+	if log:
+		log.info(f"{datetime.now()} Creating {file_metadata['name']}")
+
+	service.files().create(
+		body=file_metadata,
+		media_body=media,
+		fields='id',
+		supportsAllDrives=True
+	).execute()
+
+def drive_update_file(service, media, dup_files:list, log:bool):
+	if log:
+		log.info(f"{datetime.now()} Updating {dup_files[0]['name']}")
+
+	dup_file_id = dup_files[0]['id']
+	service.files().update(
+		fileId=dup_file_id,
+		media_body=media,
+		supportsAllDrives=True
+	).execute()
+
 '''
 Search/Autodetect
 '''
@@ -62,7 +102,7 @@ def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, cre
 	return []
 
 # return latest occurence of file metadata
-def drive_get_file_metadata(service, parent_folder_id: str, file_name: str):
+def drive_search_filename(service, parent_folder_id: str, file_name:str):
 	query = f"""
 	'{parent_folder_id}' in parents
 	and name = '{file_name}'
@@ -93,7 +133,7 @@ Extract to df
 '''
 
 # extract to df - can be used to push to bq/bucket
-def drive_csv_to_df(service, file_metadata):
+def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
 	try:
 		request = service.files().get_media(fileId=file_metadata['id'])
 		csv_buffer = BytesIO()
@@ -110,12 +150,15 @@ def drive_csv_to_df(service, file_metadata):
 
 		return results_df
 
-	except HttpError as error:
-		log.info(f"Error processing {file_metadata['name']}: {error}")
+	except Exception as error:
+		if log:
+			log.info(f"Error processing {file_metadata['name']}: {error}")
+		if raise_error:
+			raise
 		return pd.DataFrame()
 
 # extract to df - can be used to push to bq/bucket
-def drive_excel_to_df(service, file_metadata):
+def drive_excel_to_df(service, file_metadata:dict, raise_error=True, log=True):
 	try:
 		request = service.files().get_media(fileId=file_metadata['id'])
 		excel_buffer = BytesIO()
@@ -132,112 +175,86 @@ def drive_excel_to_df(service, file_metadata):
 
 		return results_df
 
-	except HttpError as error:
-		log.info(f"Error processing {file_metadata['name']}: {error}")
-		return pd.DataFrame()
-
-	except HttpError as error:
-		log.info(f"Error processing {file_metadata['name']}: {error}")
+	except Exception as error:
+		if log:
+			log.info(f"Error processing {file_metadata['name']}: {error}")
+		if raise_error:
+			raise
 		return pd.DataFrame()
 
 '''
 Load local
 '''
 
-# used in conjunction wtih functions bq_to_excel
-def local_excel_to_gdrive(service, main_drive_id: str, dst_folder_id:str, excel_buffer, out_filename:str):
+# used in conjunction wtih functions bq_to_excel()
+# bq_to_excel() returns a list of excel_buffers()
+def local_excel_to_gdrive(
+		service,
+		main_drive_id:str,
+		dst_folder_id:str,
+		excel_buffers:list,
+		out_filename:str,
+		update_dup=True,
+		log=False
+):
+	for excel_buffer in excel_buffers:
+		# define file metadata and media type
+		file_metadata = {
+			'name': out_filename,
+			'parents': [dst_folder_id],
+			'driveId': main_drive_id
+		}
 
-	query = f"""
-	'{dst_folder_id}' in parents
-	and name = '{out_filename}'
-	and trashed=false
-	"""
+		media = MediaIoBaseUpload(
+			excel_buffer,
+			mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			resumable=True
+		)
 
-	results = service.files().list(
-			q=query,
-			fields='files(id, name)',
-			supportsAllDrives=True
-	).execute()
+		if update_dup:
+			dup_files = drive_get_dup_files(service, dst_folder_id, out_filename)
 
-	# get dup file id
-	dup_files = results.get('files')
+			# update existing files or create new ones
+			if dup_files:
+				drive_update_file(service, media, dup_files, log)
+			else:
+				drive_create_file(service, file_metadata, media)
 
-	# xlsx file metadata
-	file_metadata = {
-		'name': out_filename,
-		'parents': [dst_folder_id],
-		'driveId': main_drive_id
-	}
-
-	media = MediaIoBaseUpload(
-		excel_buffer,
-		mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-		resumable=True
-	)
-
-	# update or create files
-	if dup_files:
-		log.info(f"{datetime.now()} Updating {dup_files[0]['name']}")
-		dup_file_id = dup_files[0]['id']
-		file = service.files().update(
-			fileId=dup_file_id,
-			media_body=media,
-			supportsAllDrives=True
-		).execute()
-
-	else:
-		service.files().create(
-			body=file_metadata,
-			media_body=media,
-			fields='id',
-			supportsAllDrives=True
-		).execute()
+		else:
+			drive_create_file(service, file_metadata, media)
 
 # used in conjunction wtih functions bq_to_csv
-def local_csv_to_gdrive(service, main_drive_id: str, dst_folder_id:str, csv_buffer, out_filename:str):
-	
-	query = f"""
-	'{dst_folder_id}' in parents
-	and name = '{out_filename}'
-	and trashed=false
-	"""
+def local_csv_to_gdrive(
+		service,
+		main_drive_id:str,
+		dst_folder_id:str,
+		csv_buffers:list,
+		out_filename:str,
+		update_dup=True,
+		log=False
+):
+	for csv_buffer in csv_buffers:
+		# define file metadata and media type
+		file_metadata = {
+			'name': out_filename,
+			'parents': [dst_folder_id],
+			'driveId': main_drive_id
+		}
 
-	results = service.files().list(
-			q=query,
-			fields='files(id, name)',
-			supportsAllDrives=True
-	).execute()
+		media = MediaIoBaseUpload(
+			csv_buffer,
+			mimetype='text/csv',
+			resumable=True
+		)
 
-	# get dup file id
-	dup_files = results.get('files')
+		if update_dup:
+			dup_files = drive_get_dup_files(service, dst_folder_id, out_filename)
 
-	# xlsx file metadata
-	file_metadata = {
-		'name': out_filename,
-		'parents': [dst_folder_id],
-		'driveId': main_drive_id
-	}
+			# update existing files or create new ones
+			if dup_files:
+				drive_update_file(service, media, dup_files, log)
+			else:
+				drive_create_file(service, file_metadata, media)
 
-	media = MediaIoBaseUpload(
-		csv_buffer,
-		mimetype='text/csv',
-		resumable=True
-	)
-
-	# update or create files
-	if dup_files:
-		log.info(f"{datetime.now()} Updating {dup_files[0]['name']}")
-		dup_file_id = dup_files[0]['id']
-		file = service.files().update(
-			fileId=dup_file_id,
-			media_body=media,
-			supportsAllDrives=True
-		).execute()
-
-	else:
-		service.files().create(
-			body=file_metadata,
-			media_body=media,
-			fields='id',
-			supportsAllDrives=True
-		).execute()
+		else:
+			drive_create_file(service, file_metadata, media)
