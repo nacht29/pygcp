@@ -13,7 +13,7 @@ Creds and utils
 def build_drive_service(service_account:str, scope:str):
 	creds = service_account.Credentials.from_service_account_file(service_account, scopes=scope)
 	service = build('drive', 'v3', credentials=creds)
-
+v
 def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
 	query = f"""
 	'{dst_folder_id}' in parents
