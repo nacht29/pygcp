@@ -1,4 +1,5 @@
 import pandas as pd
+# import fireducks.pandas as pd
 import logging as log
 from io import BytesIO
 from datetime import datetime
@@ -28,7 +29,7 @@ def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
 	).execute()
 
 	# get dup file id
-	dup_files = results.get('files')
+	dup_files = results.get('files', [])
 
 	return dup_files
 
@@ -36,23 +37,33 @@ def drive_create_file(service, file_metadata:dict, media, log=False):
 	if log:
 		log.info(f"{datetime.now()} Creating {file_metadata['name']}")
 
-	service.files().create(
-		body=file_metadata,
-		media_body=media,
-		fields='id',
-		supportsAllDrives=True
-	).execute()
+	try:
+		service.files().create(
+			body=file_metadata,
+			media_body=media,
+			fields='id',
+			supportsAllDrives=True
+		).execute()
+	except Exception:
+		if log:
+			log.error(f'Error processing  {file_metadata['name']}')
+		raise
 
 def drive_update_file(service, media, dup_files:list, log:bool):
 	if log:
 		log.info(f"{datetime.now()} Updating {dup_files[0]['name']}")
 
 	dup_file_id = dup_files[0]['id']
-	service.files().update(
-		fileId=dup_file_id,
-		media_body=media,
-		supportsAllDrives=True
-	).execute()
+	try:
+		service.files().update(
+			fileId=dup_file_id,
+			media_body=media,
+			supportsAllDrives=True
+		).execute()
+	except Exception:
+		if log:
+			log.error(f'Error processing  {dup_files[0]['name']}')
+		raise
 
 '''
 Search/Autodetect
@@ -188,15 +199,9 @@ Load local
 
 # used in conjunction wtih functions bq_to_excel()
 # bq_to_excel() returns a list of excel_buffers()
-def local_excel_to_gdrive(
-		service,
-		main_drive_id:str,
-		dst_folder_id:str,
-		excel_buffers:list,
-		out_filename:str,
-		update_dup=True,
-		log=False
-):
+# try except already coded into helper functions
+
+def local_excel_to_gdrive(service, main_drive_id:str, dst_folder_id:str, excel_buffers:list, out_filename:str, update_dup=True, log=False):
 	for excel_buffer in excel_buffers:
 		# define file metadata and media type
 		file_metadata = {
@@ -224,15 +229,7 @@ def local_excel_to_gdrive(
 			drive_create_file(service, file_metadata, media)
 
 # used in conjunction wtih functions bq_to_csv
-def local_csv_to_gdrive(
-		service,
-		main_drive_id:str,
-		dst_folder_id:str,
-		csv_buffers:list,
-		out_filename:str,
-		update_dup=True,
-		log=False
-):
+def local_csv_to_gdrive( service, main_drive_id:str, dst_folder_id:str, csv_buffers:list, out_filename:str, update_dup=True, log=False):
 	for csv_buffer in csv_buffers:
 		# define file metadata and media type
 		file_metadata = {

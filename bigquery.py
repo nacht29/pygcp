@@ -19,23 +19,34 @@ def bq_build_client(json_key:str):
 BigQuery- Extract/Query from BQ
 '''
 
-def bq_to_df(bq_client, sql_script:str):
+def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 	with open(sql_script, 'r') as cur_script:
-		log.info(f'\n\n{datetime.now()} Query: {sql_script}')
-		query = ' '.join([line for line in cur_script])
-		results_df = bq_client.query(query).to_dataframe()
-		log.info(f'Results: {results_df.shape}')
+		if log:
+			log.info(f'\n\n{datetime.now()} Query: {sql_script}')
+
+		try:
+			query = ' '.join([line for line in cur_script])
+			results_df = bq_client.query(query).to_dataframe()
+		except Exception:
+			log.error(f'{sql_script} query failed.')
+			if ignore_error:
+				results_df = pd.DataFrame() 
+				return results_df
+			raise
+
+		if log:
+			log.info(f'Results: {results_df.shape}')
 
 	return (results_df)
 
 # read 1 SQL script and query BQ
 # slice the queried data into multiple ver of xlsx files
 # returns the excel buffer for read data
-def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str):
+def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False):
 	if not 0 < slice_row <= 1000000:
 		raise SliceError('Invalid slice length.')
 
-	results_df = bq_to_df(bq_client, sql_script)
+	results_df = bq_to_df(bq_client, sql_script, log, ignore_eror)
 	excel_buffers  = []
 
 	# slice the results of each script
@@ -60,11 +71,11 @@ def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str):
 
 	return excel_buffers
 
-def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str):
+def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_error=False):
 	if not 0 < slice_row <= 1000000:
 		raise SliceError('Invalid slice length.')
 
-	results_df = bq_to_df(bq_client, sql_script)
+	results_df = bq_to_df(bq_client, sql_script, log, ignore_error)
 	csv_buffers = []
 
 	for cur_row in range(0, len(results_df), slice_row):
@@ -96,9 +107,11 @@ def df_to_bq(bq_client, df, table_path:str, mode:str):
 	else:
 		raise ValueError(f"{mode} is not recognised. Use 'a' for append or 't' for truncate")
 
-	job_config = bq.LoadJobConfig(write_disposition='WRITE_TRUNCATE', autodetect=True)
-	job = bq_client.load_table_from_dataframe(df, table_path, job_config=job_config)
-	return job.result()
+	try:
+		job_config = bq.LoadJobConfig(write_disposition='WRITE_TRUNCATE', autodetect=True)
+		bq_client.load_table_from_dataframe(df, table_path, job_config=job_config)
+	except Exception:
+		raise
 
 def bucket_csv_to_bq(bq_client, bucket_csv_path: str, project_id:str, dataset:str, table:str, mode:str):
 	if mode == 'a':
@@ -115,9 +128,12 @@ def bucket_csv_to_bq(bq_client, bucket_csv_path: str, project_id:str, dataset:st
 		write_disposition=write_disposition
 	)
 
-	uri = f'gs://{bucket_csv_path}/csv name'
-	job = bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
-	job.result()
+	uri = f'gs://{bucket_csv_path}'
+	try:
+		bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+	except Exception:
+		log.info('Failed to load CSV to bucket')
+		raise
 
 def bucket_excel_to_bq(bq_client, bucket_excel_path:str, project_id:str, dataset:str, table:str, mode:str):
 	if mode == 'a':
@@ -135,8 +151,11 @@ def bucket_excel_to_bq(bq_client, bucket_excel_path:str, project_id:str, dataset
 	)
 
 	uri = f'gs://{bucket_excel_path}'
-	job = bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
-	job.result()
+	try:
+		bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+	except Exception:
+		log.info('Failed to load Excel to bucket')
+		raise
 
 '''
 - Local excel/csv to bq:
