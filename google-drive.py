@@ -1,19 +1,20 @@
 import pandas as pd
-# import fireducks.pandas as pd
 import logging as log
 from io import BytesIO
 from datetime import datetime
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload, MediaIoBaseDownload
 
 '''
 Creds and utils
 '''
 
-def build_drive_service(service_account:str, scope:str):
-	creds = service_account.Credentials.from_service_account_file(service_account, scopes=scope)
+def build_drive_service(service_account_key):
+	scopes = ["https://www.googleapis.com/auth/drive"]
+	creds = service_account.Credentials.from_service_account_file(service_account_key, scopes=scopes)
 	service = build('drive', 'v3', credentials=creds)
+	return service
 
 def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
 	query = f"""
@@ -25,7 +26,8 @@ def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
 	results = service.files().list(
 			q=query,
 			fields='files(id, name)',
-			supportsAllDrives=True
+			supportsAllDrives=True,
+			includeItemsFromAllDrives=True
 	).execute()
 
 	# get dup file id
@@ -35,7 +37,7 @@ def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
 
 def drive_create_file(service, file_metadata:dict, media, log=False):
 	if log:
-		log.info(f"{datetime.now()} Creating {file_metadata['name']}")
+		print(f"{datetime.now()} Creating {file_metadata['name']}")
 
 	try:
 		service.files().create(
@@ -46,12 +48,12 @@ def drive_create_file(service, file_metadata:dict, media, log=False):
 		).execute()
 	except Exception:
 		if log:
-			log.error(f'Error processing  {file_metadata['name']}')
+			print(f'Error processing  {file_metadata['name']}')
 		raise
 
 def drive_update_file(service, media, dup_files:list, log:bool):
 	if log:
-		log.info(f"{datetime.now()} Updating {dup_files[0]['name']}")
+		print(f"{datetime.now()} Updating {dup_files[0]['name']}")
 
 	dup_file_id = dup_files[0]['id']
 	try:
@@ -62,7 +64,7 @@ def drive_update_file(service, media, dup_files:list, log:bool):
 		).execute()
 	except Exception:
 		if log:
-			log.error(f'Error processing  {dup_files[0]['name']}')
+			print(f'Error processing  {dup_files[0]['name']}')
 		raise
 
 '''
@@ -152,7 +154,7 @@ def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
 
 		while True:
 			status, done = downloader.next_chunk()
-			log.info(f"{file_metadata['name']} {int(status.progress() * 100)}%")
+			print(f"{file_metadata['name']} {int(status.progress() * 100)}%")
 			if done:
 				break
 
@@ -163,7 +165,7 @@ def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
 
 	except Exception as error:
 		if log:
-			log.info(f"Error processing {file_metadata['name']}: {error}")
+			print(f"Error processing {file_metadata['name']}: {error}")
 		if raise_error:
 			raise
 		return pd.DataFrame()
@@ -177,7 +179,7 @@ def drive_excel_to_df(service, file_metadata:dict, raise_error=True, log=True):
 
 		while True:
 			status, done = downloader.next_chunk()
-			log.info(f"{file_metadata['name']} {int(status.progress() * 100)}%")
+			print(f"{file_metadata['name']} {int(status.progress() * 100)}%")
 			if done:
 				break
 
@@ -188,7 +190,7 @@ def drive_excel_to_df(service, file_metadata:dict, raise_error=True, log=True):
 
 	except Exception as error:
 		if log:
-			log.info(f"Error processing {file_metadata['name']}: {error}")
+			print(f"Error processing {file_metadata['name']}: {error}")
 		if raise_error:
 			raise
 		return pd.DataFrame()
@@ -197,13 +199,18 @@ def drive_excel_to_df(service, file_metadata:dict, raise_error=True, log=True):
 Load local
 '''
 
-# used in conjunction wtih functions bq_to_excel()
-# bq_to_excel() returns a list of excel_buffers()
-# try except already coded into helper functions
-
-def local_excel_to_gdrive(service, main_drive_id:str, dst_folder_id:str, excel_buffers:list, out_filename:str, update_dup=True, log=False):
-	for excel_buffer in excel_buffers:
+def local_excel_to_gdrive(
+		service,
+		main_drive_id:str,
+		dst_folder_id:str,
+		excel_files:list,
+		out_filename:str,
+		update_dup=True,
+		log=False
+):
+	for filename, buffer in excel_files:
 		# define file metadata and media type
+		out_filename = filename
 		file_metadata = {
 			'name': out_filename,
 			'parents': [dst_folder_id],
@@ -211,7 +218,7 @@ def local_excel_to_gdrive(service, main_drive_id:str, dst_folder_id:str, excel_b
 		}
 
 		media = MediaIoBaseUpload(
-			excel_buffer,
+			buffer,
 			mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 			resumable=True
 		)
@@ -229,9 +236,17 @@ def local_excel_to_gdrive(service, main_drive_id:str, dst_folder_id:str, excel_b
 			drive_create_file(service, file_metadata, media)
 
 # used in conjunction wtih functions bq_to_csv
-def local_csv_to_gdrive( service, main_drive_id:str, dst_folder_id:str, csv_buffers:list, out_filename:str, update_dup=True, log=False):
-	for csv_buffer in csv_buffers:
-		# define file metadata and media type
+def local_csv_to_gdrive(
+		service,
+		main_drive_id:str,
+		dst_folder_id:str,
+		csv_files:list,
+		out_filename:str,
+		update_dup=True,
+		log=False
+):
+	for filename, buffer in csv_files:
+		out_filename = filename
 		file_metadata = {
 			'name': out_filename,
 			'parents': [dst_folder_id],
@@ -239,7 +254,7 @@ def local_csv_to_gdrive( service, main_drive_id:str, dst_folder_id:str, csv_buff
 		}
 
 		media = MediaIoBaseUpload(
-			csv_buffer,
+			buffer,
 			mimetype='text/csv',
 			resumable=True
 		)
