@@ -1,4 +1,5 @@
 from google.cloud import storage
+from google.cloud import bigquery as bq
 from google.oauth2 import service_account
 
 '''
@@ -94,7 +95,7 @@ def local_csv_to_bucket(
 Bucket to BQ
 '''
 
-def bucket_csv_to_bq(bq_client, bucket_csv_path:str, project_id:str, dataset:str, table:str, mode:str):
+def bucket_csv_to_bq(bucket_client, bucket_csv_path:str, project_id:str, dataset:str, table:str, mode:str):
 	if mode == 'a':
 		write_disposition = 'WRITE_APPEND'
 	elif mode == 't':
@@ -111,12 +112,12 @@ def bucket_csv_to_bq(bq_client, bucket_csv_path:str, project_id:str, dataset:str
 
 	uri = f'gs://{bucket_csv_path}'
 	try:
-		bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+		bq.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
 	except Exception:
 		print('Failed to load CSV to bucket')
 		raise
 
-def bucket_excel_to_bq(bq_client, bucket_excel_path:str, project_id:str, dataset:str, table:str, mode:str):
+def bucket_excel_to_bq(bucket_client, bucket_excel_path:str, project_id:str, dataset:str, table:str, mode:str):
 
 	if mode == 'a':
 		write_disposition = 'WRITE_APPEND'
@@ -127,14 +128,14 @@ def bucket_excel_to_bq(bq_client, bucket_excel_path:str, project_id:str, dataset
 	
 	job_config = bq.LoadJobConfig(
 		source_format=bq.SourceFormat.XLSX,
-		skip_leading_rows=1,
+		skip_leading_rows=0,
 		autodetect=True,
 		write_disposition=write_disposition
 	)
 
 	uri = f'gs://{bucket_excel_path}'
 	try:
-		bq_client.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+		bq.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
 	except Exception:
 		print('Failed to load Excel to bucket')
 		raise
