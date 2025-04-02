@@ -139,7 +139,6 @@ def bq_to_csv(bq_client,
 	- e.g. ```[(filename_1.csv, buffer_1), (filename_2.csv, buffer_2), ...]```
 - note: the excel files are stored as binary data in a temporary in RAM and only exists during runtime
 
-
 ---
 
 ### **df_to_bq**
