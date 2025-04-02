@@ -27,7 +27,7 @@ def get_month_year(month_name=False):
 
 def gen_file_name(prefix:str, infile_name:str, infile_type:str, outfile_type:str, suffix:str):
 	file_name = infile_name.replace(infile_type, '')
-	final_file_name = f"{prefix}{file_name}{suffix}.{outfile_type}"
+	final_file_name = f"{prefix}{file_name}{suffix}{outfile_type}"
 	return final_file_name
 
 def snake_case(col: str) -> str:
