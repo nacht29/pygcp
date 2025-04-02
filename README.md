@@ -15,26 +15,26 @@ A library containing useful functions for interacting with Google Cloud Platform
 ### Windows WSL
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2 --break-system-packages
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.4 --break-system-packages
 ```
 
 ### Windows WSL (force reinstallation)
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2 --break-system- --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.4 --break-system- --force-reinstall
 ```
 
 
 ### macOS/Linux
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.4
 ```
 
 ### macOS/Linux ((force reinstallation))
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2 --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.4 --force-reinstall
 ```
 
 ---
@@ -123,13 +123,7 @@ def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 #### **Syntax:**
 
 ```py
-def bq_to_excel(bq_client,
-				sql_script:str,
-				slice_row:int,
-				outfile_name:str,
-				log=False,
-				ignore_eror=False
-) -> tuple:
+def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
 ```
 
 #### **Parameters**:
@@ -159,13 +153,7 @@ def bq_to_excel(bq_client,
 #### **Syntax:**
 
 ```py
-def bq_to_csv(bq_client,
-				sql_script:str,
-				slice_row:int,
-				outfile_name:str,
-				log=False,
-				ignore_eror=False
-) -> tuple:
+def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
 ```
 
 #### **Parameters**:

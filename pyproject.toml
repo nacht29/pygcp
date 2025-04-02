@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygcp"
-version = "1.0.2"
+version = "1.0.4"
 authors = [
     { name = "Chan Yan Zhe", email = "yanzhechan29@gmail.com" }
 ]
 description = "A Python library for Google Cloud Platform (GCP) and Google Workspace related operations"
-readme = "README.md"
+readme = "testpypi-page.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 classifiers = [
