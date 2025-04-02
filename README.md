@@ -10,6 +10,14 @@ A library containing useful functions for interacting with Google Cloud Platform
 
 ---
 
+## Installation
+
+```bash
+pip install pygcp
+```
+
+---
+
 ## ```pygcp.bigquery```
 
 **Functions for interacting with Google BigQuery**

@@ -1,11 +1,8 @@
 import os
-import sys
 import smtplib
-import traceback
 from email.mime.text import MIMEText
 
 import calendar
-import logging as log
 from datetime import datetime
 
 def file_type_in_dir(file_dir:str, file_type:str):
