@@ -36,22 +36,26 @@ def gen_file_name(prefix:str, infile_name:str, infile_type:str, outfile_type:str
 def snake_case(col: str) -> str:
 	return col.lower().strip().replace(' ', '_').replace('-', '_')
 
-def send_email(subject:str, message:str,
-			   smtp_server:str=None, 
-			   smtp_port:int=None, 
-			   sender_email:str=None,
-			   sender_password:str=None, 
-			   receiver_email:str=None):
+def send_email(
+		subject:str,
+		message:str,
+		smtp_server:str=None,
+		smtp_port:int=None,
+		sender_email:str=None,
+		app_password:str=None,
+		receiver_email:str=None,
+		cc_emails:list=None
+):
 
 	# get email params from env if not provided
 	smtp_server = smtp_server or os.getenv('SMTP_SERVER')
 	smtp_port = smtp_port or int(os.getenv('SMTP_PORT', 587))
 	sender_email = sender_email or os.getenv('SENDER_EMAIL')
-	sender_password = sender_password or os.getenv('SENDER_PASSWORD')
+	app_password = app_password or os.getenv('APP_PASSWORD')
 	receiver_email = receiver_email or os.getenv('RECEIVER_EMAIL')
 
 	# validate params
-	if not all([smtp_server, smtp_port, sender_email, sender_password, receiver_email]):
+	if not all([smtp_server, smtp_port, sender_email, app_password, receiver_email]):
 		raise ValueError('Missing email config params')
 
 	# draft email
@@ -59,13 +63,15 @@ def send_email(subject:str, message:str,
 	msg['Subject'] = subject
 	msg['From'] = sender_email
 	msg['To'] = receiver_email
+	if cc_emails:
+		msg['Cc'] = ', '.join(cc_emails)
 
 	# send email
 	try:
 		with smtplib.SMTP(smtp_server, smtp_port) as server:
 			server.starttls()
-			server.login(sender_email, sender_password)
+			server.login(sender_email, app_password)
 			server.send_message(msg)
-	except Exception:
-		log.info()
+	except Exception as e:
+		print(f"Failed to send email: {str(e)}")
 		raise
