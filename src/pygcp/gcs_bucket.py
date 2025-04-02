@@ -3,15 +3,6 @@ from google.cloud import bigquery as bq
 from google.oauth2 import service_account
 
 '''
-Build Bucket Client
-'''
-
-def build_bucket_client(service_account:str):
-	credentials = service_account.Credentials.from_service_account_file(service_account)
-	bucket_client = storage.Client(credentials=credentials, project=credentials.project_id)
-	return bucket_client
-
-'''
 Load to Bucket
 '''
 # bucket path: gch_extract_drive_01/supply_chain/possales_rl

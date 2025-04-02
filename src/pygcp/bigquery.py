@@ -5,15 +5,6 @@ from google.cloud import bigquery as bq
 from google.oauth2 import service_account
 
 '''
-BigQuery - client
-'''
-
-def build_bq_client(json_key:str):
-	credentials = service_account.Credentials.from_service_account_file(json_key)
-	bq_client = bq.Client(credentials=credentials, project=credentials.project_id)
-	return bq_client
-
-'''
 BigQuery- Extract/Query from BQ
 '''
 

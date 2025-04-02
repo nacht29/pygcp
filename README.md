@@ -15,26 +15,26 @@ A library containing useful functions for interacting with Google Cloud Platform
 ### Windows WSL
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.1 --break-system-packages
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2 --break-system-packages
 ```
 
 ### Windows WSL (force reinstallation)
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.1 --break-system- --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2 --break-system- --force-reinstall
 ```
 
 
 ### macOS/Linux
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.1
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2
 ```
 
 ### macOS/Linux ((force reinstallation))
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.1 --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.0.2 --force-reinstall
 ```
 
 ---
