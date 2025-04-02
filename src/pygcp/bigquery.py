@@ -49,7 +49,7 @@ def bq_to_excel(bq_client,
 ) -> tuple:
 
 	if not 0 < slice_row <= 1000000:
-		raise SliceError('Invalid slice length.')
+		raise ValueError('Invalid slice length.')
 
 	results_df = bq_to_df(bq_client, sql_script, log, ignore_eror)
 	excel_buffers  = []
