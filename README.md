@@ -12,41 +12,58 @@ A library containing useful functions for interacting with Google Cloud Platform
 
 ## Installation
 
+### Windows WSL
+
 ```bash
-pip install pygcp
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp --break-system-packages
+```
+
+### Windows WSL (force reinstallation)
+
+```bash
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp --break-system- --force-reinstall
+```
+
+
+### macOS/Linux
+
+```bash
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp
+```
+
+### macOS/Linux ((force reinstallation))
+
+```bash
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp --force-reinstall
 ```
 
 ---
 
 ## ```pygcp.bigquery```
 
-**Functions for interacting with Google BigQuery**
-
-### bq_to_xlsx
+### **bq_to_df**
 
 #### **Usage:**
-
-Reads data from BigQuery using a given SQL script and slices the resulting data into multiple Excel (xlsx) binary files of a specified row length.
+Read SQL script and query data from BigQuery then stores the query results in a pandas dataframe.
 
 #### **Syntax:**
 
 ```py
-def bq_to_xlsx(bq_client, sql_script: str, slice_row: int, outfile_name:str)
+def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 ```
 
 #### **Parameters**:
-- ```bq_client```: The BigQuery client object used for querying data.
-- ```sql_script``` (str): The path to your SQL script.
-- ```slice_row``` (int): The maximum number of rows each Excel file should contain. Range: ```0 < row <= 1,000,000```
-- ```outfile_name``` (str): The base name of the output Excel file. The function appends a version number (_1, _2, etc.) to this base name.
 
-#### **Extra notes: BigQuery client object**
+- ```bq_client```: client object for BigQuery
+- ```sql_script```: the name of the SQL script to be executed
+- ```log```:
+    - ```True```: enable
+    - ```False```: disable logging
+- ```ignore_error```:
+    - ```True```: returns empty list and proceed when error occurs
+    - ```False```: stops execution and raises exception
 
-```py
-JSON_KEYS_PATH = '/path/to/your/service_account/json-key-file'
-credentials = service_account.Credentials.from_service_account_file(JSON_KEYS_PATH)
-bq_client = bq.Client(credentials=credentials, project=credentials.project_id)
-```
+### **bq_to_excel**
 
 ---
 

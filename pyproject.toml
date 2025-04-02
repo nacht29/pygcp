@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygcp"
-version = "0.3.0"
+version = "0.7.0"
 authors = [
     { name = "Chan Yan Zhe", email = "yanzhechan29@gmail.com" }
 ]
@@ -29,3 +29,14 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/nacht29/pygcp"
+
+[tool.setuptools]
+# Critical configuration for src-layout:
+package-dir = {"" = "src"}
+packages = ["pygcp"]
+
+# Optional (recommended) - include package data like non-PY files:
+include-package-data = true
+
+[tool.setuptools.package-data]
+"pygcp" = ["*.json", "*.yaml", "*.txt"]  # Add other file types if needed

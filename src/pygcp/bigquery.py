@@ -3,7 +3,6 @@ from io import BytesIO
 from datetime import datetime
 from google.cloud import bigquery as bq
 from google.oauth2 import service_account
-from exceptions import SliceError
 
 '''
 BigQuery - client
