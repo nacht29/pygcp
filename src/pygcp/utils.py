@@ -16,14 +16,17 @@ def file_type_in_dir(file_dir:str, file_type:str):
 	else:
 		return [file for file in files_in_dir if file.endswith(file_type)]
 
-def get_month_year(month_name=False):
-	if month_name:
+def get_year():
+	year = datetime.now().year
+
+	return year
+
+def get_month(name=False):
+	if name:
 		month = calendar.month_name[datetime.now().month]
 	else:
 		month = datetime.now().month
-	year = datetime.now().year
-
-	return (month, year)
+	return month
 
 def gen_file_name(prefix:str, infile_name:str, infile_type:str, outfile_type:str, suffix:str):
 	file_name = infile_name.replace(infile_type, '')

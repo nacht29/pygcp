@@ -48,7 +48,7 @@ def drive_create_file(service, file_metadata:dict, media, log=False):
 		).execute()
 	except Exception:
 		if log:
-			print(f'Error processing  {file_metadata['name']}')
+			print(f"Error processing  {file_metadata['name']}")
 		raise
 
 def drive_update_file(service, media, dup_files:list, log:bool):
@@ -64,7 +64,7 @@ def drive_update_file(service, media, dup_files:list, log:bool):
 		).execute()
 	except Exception:
 		if log:
-			print(f'Error processing  {dup_files[0]['name']}')
+			print(f"Error processing  {dup_files[0]['name']}")
 		raise
 
 '''
@@ -204,15 +204,13 @@ def local_excel_to_gdrive(
 		main_drive_id:str,
 		dst_folder_id:str,
 		excel_files:list,
-		out_filename:str,
 		update_dup=True,
 		log=False
 ):
 	for filename, buffer in excel_files:
 		# define file metadata and media type
-		out_filename = filename
 		file_metadata = {
-			'name': out_filename,
+			'name': filename,
 			'parents': [dst_folder_id],
 			'driveId': main_drive_id
 		}
@@ -224,7 +222,7 @@ def local_excel_to_gdrive(
 		)
 
 		if update_dup:
-			dup_files = drive_get_dup_files(service, dst_folder_id, out_filename)
+			dup_files = drive_get_dup_files(service, dst_folder_id, filename)
 
 			# update existing files or create new ones
 			if dup_files:
@@ -241,14 +239,12 @@ def local_csv_to_gdrive(
 		main_drive_id:str,
 		dst_folder_id:str,
 		csv_files:list,
-		out_filename:str,
 		update_dup=True,
 		log=False
 ):
 	for filename, buffer in csv_files:
-		out_filename = filename
 		file_metadata = {
-			'name': out_filename,
+			'name': filename,
 			'parents': [dst_folder_id],
 			'driveId': main_drive_id
 		}
@@ -260,7 +256,7 @@ def local_csv_to_gdrive(
 		)
 
 		if update_dup:
-			dup_files = drive_get_dup_files(service, dst_folder_id, out_filename)
+			dup_files = drive_get_dup_files(service, dst_folder_id, filename)
 
 			# update existing files or create new ones
 			if dup_files:
