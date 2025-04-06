@@ -8,13 +8,15 @@ from google.oauth2 import service_account
 BigQuery- Extract/Query from BQ
 '''
 
-def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
+def bq_to_df(bq_client, sql_script:str, replace_in_query:list=[], log=False, ignore_error=False):
 	with open(sql_script, 'r') as cur_script:
 		if log:
 			print(f'\n\n{datetime.now()} Query: {sql_script}')
 
 		try:
 			query = ' '.join([line for line in cur_script])
+			for find, replace in replace_in_query:
+				query = query.replace(find, replace)
 			results_df = bq_client.query(query).to_dataframe()
 		except Exception:
 			print(f'{sql_script} query failed.')
@@ -35,6 +37,7 @@ def bq_to_excel(bq_client,
 				sql_script:str,
 				slice_row:int,
 				outfile_name:str,
+				replace_in_query:list=[],
 				log=False,
 				ignore_eror=False
 ) -> tuple:
@@ -42,7 +45,7 @@ def bq_to_excel(bq_client,
 	if not 0 < slice_row <= 1000000:
 		raise ValueError('Invalid slice length.')
 
-	results_df = bq_to_df(bq_client, sql_script, log, ignore_eror)
+	results_df = bq_to_df(bq_client, sql_script, replace_in_query, log, ignore_eror)
 	excel_buffers  = []
 
 	# slice the results of each script
@@ -71,6 +74,7 @@ def bq_to_csv(bq_client,
 			  sql_script:str,
 			  slice_row:int,
 			  outfile_name:str,
+			  replace_in_query:list=[],
 			  log=False,
 			  ignore_error=False
 ) -> tuple:
@@ -78,7 +82,7 @@ def bq_to_csv(bq_client,
 	if not 0 < slice_row <= 1000000:
 		raise ValueError('Invalid slice length.')
 
-	results_df = bq_to_df(bq_client, sql_script, log, ignore_error)
+	results_df = bq_to_df(bq_client, sql_script, replace_in_query, log, ignore_error)
 	csv_buffers = []
 
 	for cur_row in range(0, len(results_df), slice_row):
