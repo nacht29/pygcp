@@ -103,7 +103,9 @@ def bucket_csv_to_bq(bucket_client, bucket_csv_path:str, project_id:str, dataset
 
 	uri = f'gs://{bucket_csv_path}'
 	try:
-		bq.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+		job = bq.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+		job.result()
+		return job
 	except Exception:
 		print('Failed to load CSV to bucket')
 		raise
@@ -126,7 +128,9 @@ def bucket_excel_to_bq(bucket_client, bucket_excel_path:str, project_id:str, dat
 
 	uri = f'gs://{bucket_excel_path}'
 	try:
-		bq.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+		job = bq.load_table_from_uri(uri, f"{project_id}.{dataset}.{table}", job_config=job_config)
+		job.result()
+		return job
 	except Exception:
 		print('Failed to load Excel to bucket')
 		raise
