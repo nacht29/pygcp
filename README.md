@@ -39,50 +39,6 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp
 
 ---
 
-## Setup ENV
-
-1. **In the terminal, type:**
-
-	```bash
-	pip show pygcp
-	```
-
-	This returns the path where the pygcp package is installed, such as on Linux/WSL: ```/home/username/.local/lib/python3.12/site-packages```
-
-2. Open command palette (```Ctrl + Shift + P``` on Windows/Linux and ```Cmd + Shift + P``` on macOS). Then, type:
-
-	```
-	Preferences: Open Workspace Settings (JSON)
-	```
-
-	Add the following to your workspace settings:
-
-	```json
-	"settings": {
-			"python.analysis.extraPaths": [
-				"/home/nacht29/.local/lib/python3.12/site-packages"
-			],
-			"python.defaultInterpreterPath": "/usr/bin/python3",
-			"python.analysis.diagnosticSeverityOverrides": {
-				"reportMissingImports": "none"
-			}
-		}
-	```
-
-3. Open command palette and type: 
-	
-	```
-	Python: Select Interpreter
-	``` 
-	
-	then select
-	
-	```
-	Use Python from 'pyton.defaultInterpreterPath' setting
-	```
-
----
-
 ## ```pygcp.bigquery```
 
 ### **bq_to_df**
@@ -100,9 +56,10 @@ def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 #### **Parameters**:
 
 - ```bq_client```: client object for BigQuery
-- ```sql_script```: the name of the SQL script to be executed
+- ```sql_script```: the path to the SQL script to be executed
+- ```replace_in_query```: a list of tuples, in the form of (look for a, replace with b) to replace certain components in the query
 - ```log```:
-	- ```True```: enable
+	- ```True```: enable logging
 	- ```False```: disable logging
 - ```ignore_error```:
 	- ```True```: returns empty list and proceed when error occurs
@@ -110,6 +67,7 @@ def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 
 #### **Return value**:
 - type: pandas dataframe
+- returns an empty dataframe if error occurs and user chooses to ignore error
 
 ---
 
@@ -120,7 +78,7 @@ def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 - Slices the dataframe by nth rows.
 - Generates multiple versions of ```.xlsx``` binary files. Example: query results from ```exampe.sql``` yields 3 million rows, if sliced by every 1 million row, will generate ```example_1.xlsx```,``` example2.xlsx```, ```example_3.xlsx```.
 
-#### **Syntax:**
+#### **Syntax**:
 
 ```py
 def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
@@ -132,6 +90,10 @@ def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=
 - ```slice_row```: slice my nth many rows
 - ```outfile_name```: naming convention for output file
 	- e.g. from ```example.sql```, generate ```example_{version}.xlsx```, input ```example.csv```.
+- ```replace_in_query```: a list of tuples, in the form of (look for a, replace with b) to replace certain components in the query
+- ```log```:
+	- ```True```: enable logging
+	- ```False```: disable logging
 - ```ignore_error```:
 	- ```True```: returns empty list and proceed when error occurs
 	- ```False```: stops execution and raises exception
@@ -161,7 +123,11 @@ def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=Fa
 - ```sql_script```: the name of the SQL script to be executed
 - ```slice_row```: slice my nth many rows
 - ```outfile_name```: naming convention for output file
-	- e.g. from ```example.sql```, generate ```example_{version}.csv```, input ```example.csv```.
+	- e.g. from ```example.sql```, generate ```example_{version}.xlsx```, input ```example.csv```.
+- ```replace_in_query```: a list of tuples, in the form of (look for a, replace with b) to replace certain components in the query
+- ```log```:
+	- ```True```: enable logging
+	- ```False```: disable logging
 - ```ignore_error```:
 	- ```True```: returns empty list and proceed when error occurs
 	- ```False```: stops execution and raises exception
@@ -196,5 +162,150 @@ def df_to_bq(bq_client, df, table_path:str, mode:str):
 
 ## ```pygcp.google-drive```
 
+### **```build_drive_service```**
+
+#### **Usage**:
+- Creates an authenticated service object to make authorized API calls to Google Drive
+- Needed by most functions that read and write files in Google Drive
+
+#### **Syntax**:
+
+```py
+def build_drive_service(service_account_key):
+```
+
+#### **Parameters**:
+- ```service_account_key````: Path to the JSON key of the authenticated Service Account
+
+#### **Return value**
+- Google Drive service object
+
 ---
 
+### **```drive_autodetect_folders```**
+
+#### **Usage**:
+- Searches for a target folder by name in Google Drive
+- User can choose to create the folder if target folder does not exist
+
+#### **Syntax**:
+
+```py
+def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, create_folder:bool):
+```
+
+#### **Parameters**:
+
+- ```service```: Google Drive service object
+- ```parent_folder_id```: the folder ID of the folder preceeding the target folder
+- ```folder_name```: the name of the target folder
+- ```create_folder```: boolean value to determine folder creation
+
+#### **Return value**
+- type: dictionary
+- the dicationary contains the detected/created target folder ID, folder name and last modified time 
+- returns an empty dictionary if folder is not detected and not created
+
+	```py
+	{
+		"files": [
+			{
+				"id": "your-file-id",
+				"name": "your-file-name",
+				"modifiedTime": "ISO-8601-timestamp"
+			}
+		]
+	}
+	```
+
+---
+
+### **```drive_search_filename```**
+
+#### **Usage**:
+
+#### **Syntax**:
+
+```py
+def drive_search_filename(service, parent_folder_id: str, file_name:str):
+```
+
+#### **Parameters**:
+- ```service```: Google Drive service object
+- ```parent_folder_id```: the folder ID of the folder preceeding the target folder
+- ```file_name```: name of the target file 
+
+#### **Return value**
+- type: dictionary
+- the dicationary contains the detected target file ID, file name and last modified time 
+- returns an empty dictionary if file is not detected
+
+	```py
+	{
+		"files": [
+			{
+				"id": "your-file-id",
+				"name": "your-file-name",
+				"modifiedTime": "ISO-8601-timestamp"
+			}
+		]
+	}
+	```
+
+---
+
+### **```drive_csv_to_df```**
+
+### **```build_drive_service```**
+
+#### **Usage**:
+
+#### **Syntax**:
+
+#### **Parameters**:
+
+#### **Return value**
+
+---
+
+### **```drive_excel_to_df```**
+
+### **```build_drive_service```**
+
+#### **Usage**:
+
+#### **Syntax**:
+
+#### **Parameters**:
+
+#### **Return value**
+
+---
+
+### **```local_excel_to_gdrive```**
+
+### **```build_drive_service```**
+
+#### **Usage**:
+
+#### **Syntax**:
+
+#### **Parameters**:
+
+#### **Return value**
+
+---
+
+### **```local_csv_to_gdrive```**
+
+### **```build_drive_service```**
+
+#### **Usage**:
+
+#### **Syntax**:
+
+#### **Parameters**:
+
+#### **Return value**
+
+---

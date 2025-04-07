@@ -116,6 +116,8 @@ def df_to_bq(bq_client, df, table_path:str, mode:str):
 
 	try:
 		job_config = bq.LoadJobConfig(write_disposition='WRITE_TRUNCATE', autodetect=True)
-		bq_client.load_table_from_dataframe(df, table_path, job_config=job_config)
+		job = bq_client.load_table_from_dataframe(df, table_path, job_config=job_config)
+		job.result()
+		return job
 	except Exception:
 		raise
