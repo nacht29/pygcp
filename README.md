@@ -8,6 +8,8 @@ A library containing useful functions for interacting with Google Cloud Platform
 - Google Cloud Storage Bucket
 - Google Drive
 
+**[View the project on TestPyPI](https://test.pypi.org/project/pygcp/)**
+
 ---
 
 ## Installation
@@ -31,7 +33,7 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp
 python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.4
 ```
 
-### macOS/Linux ((force reinstallation))
+### macOS/Linux (force reinstallation)
 
 ```bash
 python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.4 --force-reinstall
@@ -73,16 +75,14 @@ def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 
 ### **bq_to_excel**
 
+```py
+def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
+```
+
 #### **Usage**
 - Calls ```bq_to_df``` to get query results in the form of pandas dataframe.
 - Slices the dataframe by nth rows.
 - Generates multiple versions of ```.xlsx``` binary files. Example: query results from ```exampe.sql``` yields 3 million rows, if sliced by every 1 million row, will generate ```example_1.xlsx```,``` example2.xlsx```, ```example_3.xlsx```.
-
-#### **Syntax**:
-
-```py
-def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
-```
 
 #### **Parameters**:
 - ```bq_client```: client object for BigQuery
@@ -107,16 +107,14 @@ def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=
 
 ### **bq_to_csv**
 
+```py
+def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
+```
+
 #### **Usage**
 - Calls ```bq_to_df``` to get query results in the form of pandas dataframe.
 - Slices the dataframe by nth rows.
 - Generates multiple versions of ```.csv``` binary files. Example: query results from ```exampe.sql``` yields 3 million rows, if sliced by every 1 million row, will generate ```example_1.csv```,``` example2.csv```, ```example_3.csv```.
-
-#### **Syntax:**
-
-```py
-def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
-```
 
 #### **Parameters**:
 - ```bq_client```: client object for BigQuery
@@ -141,14 +139,13 @@ def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=Fa
 
 ### **df_to_bq**
 
-#### **Ussage**:
-- Load data from a pandas dataframe to designated tables in BigQuery
-
-#### **Syntax:**
 
 ```py
 def df_to_bq(bq_client, df, table_path:str, mode:str):
 ```
+
+#### **Ussage**:
+- Load data from a pandas dataframe to designated tables in BigQuery
 
 #### **Parameters**:
 - ```bq_client```: BigQuery client object
@@ -205,13 +202,15 @@ def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, cre
 - type: dictionary
 - the dicationary contains the detected/created target folder ID, folder name and last modified time 
 - returns an empty dictionary if folder is not detected and not created
+- note that both folders and files are identified by a file Id, accessed by ```files['id']```
+- Drive considers folders as a file as well, with ```'mimeType': 'application/vnd.google-apps.folder'```
 
 	```py
 	{
 		"files": [
 			{
-				"id": "your-file-id",
-				"name": "your-file-name",
+				"id": "your-folder-fileId",
+				"name": "your-folder-name",
 				"modifiedTime": "ISO-8601-timestamp"
 			}
 		]
@@ -256,35 +255,53 @@ def drive_search_filename(service, parent_folder_id: str, file_name:str):
 
 ### **```drive_csv_to_df```**
 
-### **```build_drive_service```**
-
 #### **Usage**:
+Read CSV file data from Google Drive and write the data to a pandas dataframe.
+
 
 #### **Syntax**:
 
+```py
+def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
+```
+
 #### **Parameters**:
 
+- service: Google Drive service object
+- file_metadata: properties of the CSV file to be read, obtained from functions such as ```drive_search_filename```.
+
 #### **Return value**
+- type: pandas dataframe
+- returns a dataframe with data
+- returns an empty dataframe if error occurs and user chooses to ignore the error
 
 ---
 
 ### **```drive_excel_to_df```**
 
-### **```build_drive_service```**
-
 #### **Usage**:
+Read Excel file data from Google Drive and write the data to a pandas dataframe.
+
 
 #### **Syntax**:
 
+```py
+def drive_excel_to_df(service, file_metadata, raise_error=True, log=True):
+```
+
 #### **Parameters**:
 
+- service: Google Drive service object
+- file_metadata: properties of the Excel file to be read, obtained from functions such as ```drive_search_filename```.
+
 #### **Return value**
+- type: pandas dataframe
+- returns a dataframe with data
+- returns an empty dataframe if error occurs and user chooses to ignore the error
 
 ---
 
 ### **```local_excel_to_gdrive```**
-
-### **```build_drive_service```**
 
 #### **Usage**:
 
@@ -297,8 +314,6 @@ def drive_search_filename(service, parent_folder_id: str, file_name:str):
 ---
 
 ### **```local_csv_to_gdrive```**
-
-### **```build_drive_service```**
 
 #### **Usage**:
 
