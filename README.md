@@ -188,12 +188,13 @@ def build_drive_service(service_account_key):
 #### **Syntax**:
 
 ```py
-def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, create_folder:bool):
+def drive_autodetect_folders(service, is_shared_drive:bool, parent_folder_id:str, folder_name:str, create_folder:bool):
 ```
 
 #### **Parameters**:
 
 - ```service```: Google Drive service object
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```parent_folder_id```: the folder ID of the folder preceeding the target folder
 - ```folder_name```: the name of the target folder
 - ```create_folder```: boolean value to determine folder creation
@@ -226,11 +227,12 @@ def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, cre
 #### **Syntax**:
 
 ```py
-def drive_search_filename(service, parent_folder_id: str, file_name:str):
+def drive_search_filename(service, is_shared_drive:bool, parent_folder_id: str, file_name:str):
 ```
 
 #### **Parameters**:
 - ```service```: Google Drive service object
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```parent_folder_id```: the folder ID of the folder preceeding the target folder
 - ```file_name```: name of the target file 
 
@@ -256,7 +258,7 @@ def drive_search_filename(service, parent_folder_id: str, file_name:str):
 ### **```drive_csv_to_df```**
 
 ```py
-def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
+def drive_csv_to_df(service, is_shared_drive:bool, file_metadata, raise_error=True, log=True):
 ```
 
 #### **Usage**:
@@ -266,6 +268,7 @@ Read CSV file data from Google Drive and write the data to a pandas dataframe.
 #### **Parameters**:
 
 - service: Google Drive service object
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```is_shared_drive:bool, 
 - file_metadata: properties of the CSV file to be read, obtained from functions such as ```drive_search_filename```.
 
 #### **Return value**
@@ -278,7 +281,7 @@ Read CSV file data from Google Drive and write the data to a pandas dataframe.
 ### **```drive_excel_to_df```**
 
 ```py
-def drive_excel_to_df(service, file_metadata, raise_error=True, log=True):
+def drive_excel_to_df(service, is_shared_drive:bool, file_metadata, raise_error=True, log=True):
 ```
 
 #### **Usage**:
@@ -287,6 +290,7 @@ Read Excel file data from Google Drive and write the data to a pandas dataframe.
 #### **Parameters**:
 
 - service: Google Drive service object
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - file_metadata: properties of the Excel file to be read, obtained from functions such as ```drive_search_filename```.
 
 #### **Return value**
@@ -299,7 +303,7 @@ Read Excel file data from Google Drive and write the data to a pandas dataframe.
 ### **```local_excel_to_gdrive```**
 
 ```py
-def local_excel_to_gdrive(service, main_drive_id:str, dst_folder_id:str, excel_files:list, update_dup=True, log=False):
+def local_excel_to_gdrive(service, is_shared_drive:bool, main_drive_id:str, dst_folder_id:str, excel_files:list, update_dup=True, log=False):
 ```
 
 #### **Usage**:
@@ -309,6 +313,7 @@ Load binary Excel files stored in local DRAM to Google Drive.
 #### **Parameters**:
 
 - ```service```: Google Drive service object
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```main_drive_id```: ID of the Drive containing the target folder, only needed for shared Drives
 - ```dst_folder_id```:
 - ```excel_files```:
