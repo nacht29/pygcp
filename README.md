@@ -315,23 +315,39 @@ Load binary Excel files stored in local DRAM to Google Drive.
 - ```service```: Google Drive service object
 - ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```main_drive_id```: ID of the Drive containing the target folder, only needed for shared Drives
-- ```dst_folder_id```:
-- ```excel_files```:
-- ```update_dup```:
-- ```log```:
+- ```dst_folder_id```: folder ID of the folder to upload the file to
+- ```excel_files```: List of Excel file name and buffers, typically gotten from ```pygcp.bigquery.bq_to_excel``` function
+- ```update_dup```: ```True``` to update data into existing files, ```False``` to create a new file despite duplicates 
+- ```log```: ```True``` to enable and ```False``` to disable logging
 
 #### **Return value**
+
+- no return values
 
 ---
 
 ### **```local_csv_to_gdrive```**
 
+```py
+def local_csv_to_gdrive(service, is_shared_drive:bool, main_drive_id:str, dst_folder_id:str, csv_files:list, update_dup=True, log=False):
+```
+
 #### **Usage**:
 
-#### **Syntax**:
+Load binary CSV files stored in local DRAM to Google Drive.
 
 #### **Parameters**:
 
+- ```service```: Google Drive service object
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
+- ```main_drive_id```: ID of the Drive containing the target folder, only needed for shared Drives
+- ```dst_folder_id```: folder ID of the folder to upload the file to
+- ```csv_files```: List of CSV file name and buffers, typically gotten from ```pygcp.bigquery.bq_to_csv``` function
+- ```update_dup```: ```True``` to update data into existing files, ```False``` to create a new file despite duplicates 
+- ```log```: ```True``` to enable and ```False``` to disable logging
+
 #### **Return value**
+
+- no return values
 
 ---
