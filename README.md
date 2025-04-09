@@ -17,26 +17,26 @@ A library containing useful functions for interacting with Google Cloud Platform
 ### Windows WSL
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.4 --break-system-packages
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.6 --break-system-packages
 ```
 
 ### Windows WSL (force reinstallation)
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.4 --break-system- --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.6 --break-system- --force-reinstall
 ```
 
 
 ### macOS/Linux
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.4
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.6
 ```
 
 ### macOS/Linux (force reinstallation)
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.4 --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.6 --force-reinstall
 ```
 
 ---
@@ -255,15 +255,13 @@ def drive_search_filename(service, parent_folder_id: str, file_name:str):
 
 ### **```drive_csv_to_df```**
 
-#### **Usage**:
-Read CSV file data from Google Drive and write the data to a pandas dataframe.
-
-
-#### **Syntax**:
-
 ```py
 def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
 ```
+
+#### **Usage**:
+Read CSV file data from Google Drive and write the data to a pandas dataframe.
+
 
 #### **Parameters**:
 
@@ -279,15 +277,12 @@ def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
 
 ### **```drive_excel_to_df```**
 
-#### **Usage**:
-Read Excel file data from Google Drive and write the data to a pandas dataframe.
-
-
-#### **Syntax**:
-
 ```py
 def drive_excel_to_df(service, file_metadata, raise_error=True, log=True):
 ```
+
+#### **Usage**:
+Read Excel file data from Google Drive and write the data to a pandas dataframe.
 
 #### **Parameters**:
 
@@ -303,11 +298,22 @@ def drive_excel_to_df(service, file_metadata, raise_error=True, log=True):
 
 ### **```local_excel_to_gdrive```**
 
+```py
+def local_excel_to_gdrive(service, main_drive_id:str, dst_folder_id:str, excel_files:list, update_dup=True, log=False):
+```
+
 #### **Usage**:
 
-#### **Syntax**:
+Load binary Excel files stored in local DRAM to Google Drive.
 
 #### **Parameters**:
+
+- ```service```: Google Drive service object
+- ```main_drive_id```: ID of the Drive containing the target folder, only needed for shared Drives
+- ```dst_folder_id```:
+- ```excel_files```:
+- ```update_dup```:
+- ```log```:
 
 #### **Return value**
 

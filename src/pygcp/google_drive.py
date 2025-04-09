@@ -16,7 +16,7 @@ def build_drive_service(service_account_key):
 	service = build('drive', 'v3', credentials=creds)
 	return service
 
-def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
+def drive_get_dup_files(service, is_shared_drive:bool, dst_folder_id:str, out_filename:str):
 	query = f"""
 	'{dst_folder_id}' in parents
 	and name='{out_filename}'
@@ -26,8 +26,8 @@ def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
 	results = service.files().list(
 			q=query,
 			fields='files(id, name)',
-			supportsAllDrives=True,
-			includeItemsFromAllDrives=True
+			supportsAllDrives=is_shared_drive,
+			includeItemsFromAllDrives=is_shared_drive
 	).execute()
 
 	# get dup file id
@@ -35,7 +35,7 @@ def drive_get_dup_files(service, dst_folder_id:str, out_filename:str):
 
 	return dup_files
 
-def drive_create_file(service, file_metadata:dict, media, log=False):
+def drive_create_file(service, is_shared_drive:bool, file_metadata:dict, media, log=False):
 	if log:
 		print(f"{datetime.now()} Creating {file_metadata['name']}")
 
@@ -44,14 +44,14 @@ def drive_create_file(service, file_metadata:dict, media, log=False):
 			body=file_metadata,
 			media_body=media,
 			fields='id',
-			supportsAllDrives=True
+			supportsAllDrives=is_shared_drive
 		).execute()
 	except Exception:
 		if log:
 			print(f"Error processing  {file_metadata['name']}")
 		raise
 
-def drive_update_file(service, media, dup_files:list, log:bool):
+def drive_update_file(service, is_shared_drive:bool, media, dup_files:list, log:bool):
 	if log:
 		print(f"{datetime.now()} Updating {dup_files[0]['name']}")
 
@@ -60,7 +60,7 @@ def drive_update_file(service, media, dup_files:list, log:bool):
 		service.files().update(
 			fileId=dup_file_id,
 			media_body=media,
-			supportsAllDrives=True
+			supportsAllDrives=is_shared_drive
 		).execute()
 	except Exception:
 		if log:
@@ -74,7 +74,7 @@ Search/Autodetect
 # detect existing folder or create new folder
 # return latest occurence of existing folder metadata in dst
 # parent_folder_id = folder id before the target folder
-def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, create_folder:bool):
+def drive_autodetect_folders(service, is_shared_drive:bool, parent_folder_id:str, folder_name:str, create_folder:bool):
 	query = f"""
 	'{parent_folder_id}' in parents 
 	and name='{folder_name}'
@@ -88,8 +88,8 @@ def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, cre
 		fields='files(id, name, modifiedTime)',
 		orderBy='modifiedTime desc',
 		pageSize=1,
-		supportsAllDrives=True,
-		includeItemsFromAllDrives=True
+		supportsAllDrives=is_shared_drive,
+		includeItemsFromAllDrives=is_shared_drive
 	).execute()
 
 	folders_in_drive = results.get('files', []) # files_in_drive = results.get('files', [])
@@ -106,8 +106,8 @@ def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, cre
 		folder = service.files().create(
 			body=folder_metadata,
 			fields='id, name',
-			supportsAllDrives=True
-			# note that for .create, there is no need to includeItemsFromAllDrives=True
+			supportsAllDrives=is_shared_drive
+			# note that for .create, there is no need to includeItemsFromAllDrives=is_shared_drive
 		).execute()
 
 		return folder
@@ -115,7 +115,7 @@ def drive_autodetect_folders(service, parent_folder_id:str, folder_name:str, cre
 	return []
 
 # return latest occurence of file metadata
-def drive_search_filename(service, parent_folder_id: str, file_name:str):
+def drive_search_filename(service, is_shared_drive:bool, parent_folder_id: str, file_name:str):
 	query = f"""
 	'{parent_folder_id}' in parents
 	and name = '{file_name}'
@@ -128,8 +128,8 @@ def drive_search_filename(service, parent_folder_id: str, file_name:str):
 			fields='files(id, name, modifiedTime)',
 			orderBy='modifiedTime desc',
 			pageSize=1,
-			supportsAllDrives=True,
-			includeItemsFromAllDrives=True,
+			supportsAllDrives=is_shared_drive,
+			includeItemsFromAllDrives=is_shared_drive,
 		).execute()
 		
 		files = response.get('files', [])
@@ -202,6 +202,7 @@ Load local
 def local_excel_to_gdrive(
 		service,
 		main_drive_id:str,
+		is_shared_drive:bool,
 		dst_folder_id:str,
 		excel_files:list,
 		update_dup=True,
@@ -222,20 +223,21 @@ def local_excel_to_gdrive(
 		)
 
 		if update_dup:
-			dup_files = drive_get_dup_files(service, dst_folder_id, filename)
+			dup_files = drive_get_dup_files(service, is_shared_drive, dst_folder_id, filename)
 
 			# update existing files or create new ones
 			if dup_files:
-				drive_update_file(service, media, dup_files, log)
+				drive_update_file(service, is_shared_drive, media, dup_files, log)
 			else:
-				drive_create_file(service, file_metadata, media)
+				drive_create_file(service, is_shared_drive, file_metadata, media)
 
 		else:
-			drive_create_file(service, file_metadata, media)
+			drive_create_file(service, is_shared_drive, file_metadata, media)
 
 # used in conjunction wtih functions bq_to_csv
 def local_csv_to_gdrive(
 		service,
+		is_shared_drive:bool,
 		main_drive_id:str,
 		dst_folder_id:str,
 		csv_files:list,
@@ -256,13 +258,13 @@ def local_csv_to_gdrive(
 		)
 
 		if update_dup:
-			dup_files = drive_get_dup_files(service, dst_folder_id, filename)
+			dup_files = drive_get_dup_files(service, is_shared_drive, dst_folder_id, filename)
 
 			# update existing files or create new ones
 			if dup_files:
-				drive_update_file(service, media, dup_files, log)
+				drive_update_file(service, is_shared_drive, media, dup_files, log)
 			else:
-				drive_create_file(service, file_metadata, media)
+				drive_create_file(service, is_shared_drive, file_metadata, media)
 
 		else:
-			drive_create_file(service, file_metadata, media)
+			drive_create_file(service, is_shared_drive, file_metadata, media)
