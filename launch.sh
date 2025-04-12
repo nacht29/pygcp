@@ -2,4 +2,4 @@ rm -r dist/
 rm -r src/pygcp.egg-info/
 python3 -m build
 python3 -m twine upload --repository testpypi dist/*
-pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.7 --break-system- --force-reinstall
+pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.1.8 --break-system- --force-reinstall

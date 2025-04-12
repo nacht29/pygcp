@@ -52,7 +52,7 @@ def bq_to_excel(bq_client,
 	for cur_row in range(0, len(results_df), slice_row):
 		file_ver = cur_row // slice_row + 1
 		subset_df = results_df.iloc[cur_row:cur_row + slice_row]
-		outfile_name = outfile_name.replace('.xlsx', f'_{file_ver}.xlsx')
+		cur_outfile_name = outfile_name.replace('.xlsx', f'_{file_ver}.xlsx')
 
 		print(f'{datetime.now()} creating xlsx binary for {outfile_name}')
 
@@ -64,9 +64,9 @@ def bq_to_excel(bq_client,
 		cur_buffer.seek(0)
 
 		# add the buffer data and file name to the main list
-		excel_buffers.append((outfile_name, cur_buffer))
+		excel_buffers.append((cur_outfile_name, cur_buffer))
 
-		print(f'{datetime.now()} {outfile_name} binary created')
+		print(f'{datetime.now()} {cur_outfile_name} binary created')
 
 	return excel_buffers
 
