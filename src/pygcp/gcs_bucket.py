@@ -13,7 +13,7 @@ def local_excel_to_bucket(
 	bucket_id:str,
 	bucket_base_filepath:str,
 	excel_files:tuple,
-	content_type:str = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	content_type:str="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 	log=True
 ):
 	try:

@@ -75,8 +75,11 @@ def bq_to_csv(bq_client,
 			  slice_row:int,
 			  outfile_name:str,
 			  replace_in_query:list=[],
-			  log=False,
-			  ignore_error=False
+			  encoding:str='utf-8',
+			  index:bool=False,
+			  header:bool=True,
+			  log:bool=False,
+			  ignore_error:bool=False
 ) -> tuple:
 
 	if not 0 < slice_row <= 1000000:
@@ -93,7 +96,15 @@ def bq_to_csv(bq_client,
 		print(f'{datetime.now()} creating CSV binary for {cur_outfile_name}')
 
 		cur_buffer = BytesIO()
-		subset_df.to_csv(cur_buffer, index=False)
+
+		subset_df.to_csv(
+			path_or_buf=cur_buffer, 
+			sep=sep, 
+			encoding=encoding,
+			index=index, 
+			header=header
+		)
+
 		cur_buffer.seek(0)
 
 		csv_buffers.append((cur_outfile_name, cur_buffer))
