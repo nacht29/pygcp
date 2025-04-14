@@ -75,6 +75,7 @@ def bq_to_csv(bq_client,
 			  slice_row:int,
 			  outfile_name:str,
 			  replace_in_query:list=[],
+			  sep=',',
 			  encoding:str='utf-8',
 			  index:bool=False,
 			  header:bool=True,
@@ -99,7 +100,7 @@ def bq_to_csv(bq_client,
 
 		subset_df.to_csv(
 			path_or_buf=cur_buffer, 
-			sep=sep, 
+			sep=sep,
 			encoding=encoding,
 			index=index, 
 			header=header
