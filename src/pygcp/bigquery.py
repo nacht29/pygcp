@@ -1,4 +1,4 @@
-import pandas as pd
+import fireducks.pandas as pd
 from io import BytesIO
 from datetime import datetime
 from google.cloud import bigquery as bq

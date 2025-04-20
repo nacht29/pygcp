@@ -1,4 +1,4 @@
-import pandas as pd
+import fireducks.pandas as pd
 import logging as log
 from io import BytesIO
 from datetime import datetime
