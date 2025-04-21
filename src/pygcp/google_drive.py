@@ -146,7 +146,7 @@ Extract to df
 '''
 
 # extract to df - can be used to push to bq/bucket
-def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
+def drive_csv_to_df(service, file_metadata:dict, raise_error:bool=True, log:bool=True):
 	try:
 		request = service.files().get_media(fileId=file_metadata['id'])
 		csv_buffer = BytesIO()
@@ -171,7 +171,7 @@ def drive_csv_to_df(service, file_metadata, raise_error=True, log=True):
 		return pd.DataFrame()
 
 # extract to df - can be used to push to bq/bucket
-def drive_excel_to_df(service, file_metadata:dict, raise_error=True, log=True):
+def drive_excel_to_df(service, file_metadata:dict, raise_error:bool=True, log:bool=True):
 	try:
 		request = service.files().get_media(fileId=file_metadata['id'])
 		excel_buffer = BytesIO()
@@ -205,8 +205,8 @@ def local_excel_to_gdrive(
 		is_shared_drive:bool,
 		dst_folder_id:str,
 		excel_files:list,
-		update_dup=True,
-		log=False
+		update_dup:bool=True,
+		log:bool=False
 ):
 	for filename, buffer in excel_files:
 		# define file metadata and media type

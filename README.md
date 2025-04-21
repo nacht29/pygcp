@@ -52,7 +52,7 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp
 #### **Syntax:**
 
 ```py
-def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
+def bq_to_df(bq_client, sql_script:str, replace_in_query:list=[], log=False, ignore_error=False):
 ```
 
 #### **Parameters**:
@@ -76,7 +76,7 @@ def bq_to_df(bq_client, sql_script:str, log=False, ignore_error=False):
 ### **bq_to_excel**
 
 ```py
-def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
+def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, replace_in_query:list=[], sep=',', log=False, ignore_eror=False) -> tuple:
 ```
 
 #### **Usage**
@@ -108,7 +108,7 @@ def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=
 ### **bq_to_csv**
 
 ```py
-def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=False, ignore_eror=False) -> tuple:
+def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, replace_in_query:list=[], sep:str=',', log:str=False, ignore_eror:str=False) -> tuple:
 ```
 
 #### **Usage**
@@ -123,6 +123,8 @@ def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=Fa
 - ```outfile_name```: naming convention for output file
 	- e.g. from ```example.sql```, generate ```example_{version}.xlsx```, input ```example.csv```.
 - ```replace_in_query```: a list of tuples, in the form of (look for a, replace with b) to replace certain components in the query
+- ```sep```: delimiter for the CSV file
+- ```encoding```: encoding type for CSV file, UTF8 by default
 - ```log```:
 	- ```True```: enable logging
 	- ```False```: disable logging
@@ -138,7 +140,6 @@ def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, log=Fa
 ---
 
 ### **df_to_bq**
-
 
 ```py
 def df_to_bq(bq_client, df, table_path:str, mode:str):
@@ -258,7 +259,7 @@ def drive_search_filename(service, is_shared_drive:bool, parent_folder_id: str, 
 ### **```drive_csv_to_df```**
 
 ```py
-def drive_csv_to_df(service, is_shared_drive:bool, file_metadata, raise_error=True, log=True):
+def drive_csv_to_df(service, file_metadata:dict, raise_error:bool=True, log:bool=True):
 ```
 
 #### **Usage**:
@@ -267,9 +268,10 @@ Read CSV file data from Google Drive and write the data to a pandas dataframe.
 
 #### **Parameters**:
 
-- service: Google Drive service object
+- ```service```: Google Drive service object
 - ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```is_shared_drive:bool, 
-- file_metadata: properties of the CSV file to be read, obtained from functions such as ```drive_search_filename```.
+- ```file_metadata```: properties of the CSV file to be read, obtained from functions such as ```drive_search_filename```.
+- ```raise_error```: raise or ignore errors
 
 #### **Return value**
 - type: pandas dataframe
@@ -281,7 +283,7 @@ Read CSV file data from Google Drive and write the data to a pandas dataframe.
 ### **```drive_excel_to_df```**
 
 ```py
-def drive_excel_to_df(service, is_shared_drive:bool, file_metadata, raise_error=True, log=True):
+def drive_excel_to_df(service, is_shared_drive:bool, file_metadata:dict, raise_error:bool=True, log:bool=True):
 ```
 
 #### **Usage**:
@@ -289,9 +291,11 @@ Read Excel file data from Google Drive and write the data to a pandas dataframe.
 
 #### **Parameters**:
 
-- service: Google Drive service object
+- ```service```: Google Drive service object
 - ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - file_metadata: properties of the Excel file to be read, obtained from functions such as ```drive_search_filename```.
+- ```raise_error```: raise or ignore errors
+- ```log```: enable logging
 
 #### **Return value**
 - type: pandas dataframe
@@ -303,7 +307,7 @@ Read Excel file data from Google Drive and write the data to a pandas dataframe.
 ### **```local_excel_to_gdrive```**
 
 ```py
-def local_excel_to_gdrive(service, is_shared_drive:bool, main_drive_id:str, dst_folder_id:str, excel_files:list, update_dup=True, log=False):
+def local_excel_to_gdrive(service, main_drive_id:str, is_shared_drive:bool, dst_folder_id:str, excel_files:list, update_dup:bool=True, log:bool=False):
 ```
 
 #### **Usage**:
@@ -313,8 +317,8 @@ Load binary Excel files stored in local DRAM to Google Drive.
 #### **Parameters**:
 
 - ```service```: Google Drive service object
-- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```main_drive_id```: ID of the Drive containing the target folder, only needed for shared Drives
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```dst_folder_id```: folder ID of the folder to upload the file to
 - ```excel_files```: List of Excel file name and buffers, typically gotten from ```pygcp.bigquery.bq_to_excel``` function
 - ```update_dup```: ```True``` to update data into existing files, ```False``` to create a new file despite duplicates 
@@ -329,7 +333,7 @@ Load binary Excel files stored in local DRAM to Google Drive.
 ### **```local_csv_to_gdrive```**
 
 ```py
-def local_csv_to_gdrive(service, is_shared_drive:bool, main_drive_id:str, dst_folder_id:str, csv_files:list, update_dup=True, log=False):
+def local_csv_to_gdrive(service, main_drive_id:str, is_shared_drive:bool, dst_folder_id:str, csv_files:list, update_dup=True, log=False):
 ```
 
 #### **Usage**:
@@ -339,8 +343,8 @@ Load binary CSV files stored in local DRAM to Google Drive.
 #### **Parameters**:
 
 - ```service```: Google Drive service object
-- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```main_drive_id```: ID of the Drive containing the target folder, only needed for shared Drives
+- ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - ```dst_folder_id```: folder ID of the folder to upload the file to
 - ```csv_files```: List of CSV file name and buffers, typically gotten from ```pygcp.bigquery.bq_to_csv``` function
 - ```update_dup```: ```True``` to update data into existing files, ```False``` to create a new file despite duplicates 
