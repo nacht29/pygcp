@@ -17,26 +17,26 @@ A library containing useful functions for interacting with Google Cloud Platform
 ### Windows WSL
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.2 --break-system-packages
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.3 --break-system-packages
 ```
 
 ### Windows WSL (force reinstallation)
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.2 --break-system- --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.3 --break-system- --force-reinstall
 ```
 
 
 ### macOS/Linux
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.2
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.3
 ```
 
 ### macOS/Linux (force reinstallation)
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.2 --force-reinstall
+python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps pygcp==1.2.3 --force-reinstall
 ```
 
 ---
@@ -60,9 +60,7 @@ def bq_to_df(bq_client, sql_script:str, replace_in_query:list=[], log=False, ign
 - ```bq_client```: client object for BigQuery
 - ```sql_script```: the path to the SQL script to be executed
 - ```replace_in_query```: a list of tuples, in the form of (look for a, replace with b) to replace certain components in the query
-- ```log```:
-	- ```True```: enable logging
-	- ```False```: disable logging
+- ```log```: boolean value to enable or disable logging
 - ```ignore_error```:
 	- ```True```: returns empty list and proceed when error occurs
 	- ```False```: stops execution and raises exception
@@ -76,7 +74,7 @@ def bq_to_df(bq_client, sql_script:str, replace_in_query:list=[], log=False, ign
 ### **bq_to_excel**
 
 ```py
-def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, replace_in_query:list=[], sep=',', log=False, ignore_eror=False) -> tuple:
+def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, replace_in_query:list=[], sep=',', log=False, ignore_eror=False): -> tuple:
 ```
 
 #### **Usage**
@@ -91,9 +89,7 @@ def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, repl
 - ```outfile_name```: naming convention for output file
 	- e.g. from ```example.sql```, generate ```example_{version}.xlsx```, input ```example.csv```.
 - ```replace_in_query```: a list of tuples, in the form of (look for a, replace with b) to replace certain components in the query
-- ```log```:
-	- ```True```: enable logging
-	- ```False```: disable logging
+- ```log```: boolean value to enable or disable logging
 - ```ignore_error```:
 	- ```True```: returns empty list and proceed when error occurs
 	- ```False```: stops execution and raises exception
@@ -108,7 +104,7 @@ def bq_to_excel(bq_client, sql_script:str, slice_row:int, outfile_name:str, repl
 ### **bq_to_csv**
 
 ```py
-def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, replace_in_query:list=[], sep:str=',', log:str=False, ignore_eror:str=False) -> tuple:
+def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, replace_in_query:list=[], sep:str=',', log:str=False, ignore_eror:str=False): -> tuple:
 ```
 
 #### **Usage**
@@ -125,9 +121,7 @@ def bq_to_csv(bq_client, sql_script:str, slice_row:int, outfile_name:str, replac
 - ```replace_in_query```: a list of tuples, in the form of (look for a, replace with b) to replace certain components in the query
 - ```sep```: delimiter for the CSV file
 - ```encoding```: encoding type for CSV file, UTF8 by default
-- ```log```:
-	- ```True```: enable logging
-	- ```False```: disable logging
+- ```log```: boolean value to enable or disable logging
 - ```ignore_error```:
 	- ```True```: returns empty list and proceed when error occurs
 	- ```False```: stops execution and raises exception
@@ -295,7 +289,7 @@ Read Excel file data from Google Drive and write the data to a pandas dataframe.
 - ```is_shared_drive```: ```True``` if the Drive is a Shared Drive else ```False```
 - file_metadata: properties of the Excel file to be read, obtained from functions such as ```drive_search_filename```.
 - ```raise_error```: raise or ignore errors
-- ```log```: enable logging
+- ```log```: boolean value to enable or disable logging
 
 #### **Return value**
 - type: pandas dataframe
@@ -355,3 +349,49 @@ Load binary CSV files stored in local DRAM to Google Drive.
 - no return values
 
 ---
+
+## ```pygcp.google-drive```
+
+### ```local_excel_to_bucket```
+
+#### **Usage**:
+- Load binary Excel files stored in local DRAM to Google Cloud Storage Bucket
+
+#### **Syntax**:
+
+```py
+def local_excel_to_bucket(bucket_client, bucket_id:str, bucket_base_filepath:str, excel_files:tuple, content_type:str="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", log=True):
+```
+
+#### **Parameters**:
+- ```bucket_client```: client object for GCS Bucket
+- ```bucket_id```: GCS Bucket bucket id
+- ```bucket_base_filepath```: full path to the directory in GCS Bucket to which the Excel file will be uploaded
+- ```excel_files```: List of Excel file name and buffers, typically gotten from ```pygcp.bigquery.bq_to_excel``` function
+- ```log```: boolean value to enable or disable logging
+
+#### **Return value**
+- No return value
+
+---
+
+### ```local_csv_to_bucket```
+
+#### **Usage**:
+- Load binary CSV files stored in local DRAM to Google Cloud Storage Bucket
+
+#### **Syntax**:
+
+```py
+def local_csv_to_bucket(bucket_client, bucket_id:str, bucket_base_filepath:str, csv_files:tuple, content_type:str="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", log=True):
+```
+
+#### **Parameters**:
+- ```bucket_client```: client object for GCS Bucket
+- ```bucket_id```: GCS Bucket bucket id
+- ```bucket_base_filepath```: full path to the directory in GCS Bucket to which the CSV file will be uploaded
+- ```excel_files```: List of Excel file name and buffers, typically gotten from ```pygcp.bigquery.bq_to_excel``` function
+- ```log```: boolean value to enable or disable logging
+
+#### **Return value**
+- No return value

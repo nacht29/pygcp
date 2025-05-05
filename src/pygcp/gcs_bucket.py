@@ -13,7 +13,6 @@ def local_excel_to_bucket(
 	bucket_id:str,
 	bucket_base_filepath:str,
 	excel_files:tuple,
-	content_type:str="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 	log=True
 ):
 	try:
@@ -34,7 +33,7 @@ def local_excel_to_bucket(
 			blob = bucket.blob(full_path)
 			blob.upload_from_file(
 				buffer,
-				content_type=content_type
+				content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 			)
 
 			if log:
@@ -50,7 +49,6 @@ def local_csv_to_bucket(
 	bucket_id:str,
 	bucket_base_filepath:str,
 	csv_files:tuple,
-	content_type:str = 'text/csv',
 	log=True
 ):
 	try:
@@ -71,7 +69,7 @@ def local_csv_to_bucket(
 			blob = bucket.blob(full_path)
 			blob.upload_from_file(
 				buffer,
-				content_type=content_type
+				content_type='text/csv'
 			)
 
 			if log:
@@ -86,7 +84,14 @@ def local_csv_to_bucket(
 Bucket to BQ
 '''
 
-def bucket_csv_to_bq(bucket_client, bucket_csv_path:str, project_id:str, dataset:str, table:str, mode:str):
+def bucket_csv_to_bq(
+		bucket_client,
+		bucket_csv_path:str,
+		project_id:str,
+		dataset:str,
+		table:str,
+		mode:str
+):
 	if mode == 'a':
 		write_disposition = 'WRITE_APPEND'
 	elif mode == 't':
