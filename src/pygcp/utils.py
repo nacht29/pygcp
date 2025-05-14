@@ -1,5 +1,6 @@
 import os
 import smtplib
+from datetime import date, timedelta
 from email.mime.text import MIMEText
 
 import calendar
@@ -18,7 +19,6 @@ def file_type_in_dir(file_dir:str, file_type:str):
 
 def get_year():
 	year = datetime.now().year
-
 	return year
 
 def get_month(name=False):
@@ -27,6 +27,23 @@ def get_month(name=False):
 	else:
 		month = datetime.now().month
 	return month
+
+def get_iso_weekyear(in_date:date=None, lpad:bool=False, lpad_num:int=0, backtrack:int=0):
+	if not in_date:
+		in_date = date.today()
+
+	# backtrack n weeks from input date
+	target_date = in_date - timedelta(week=backtrack)
+	iso_week, iso_year, _ = target_date.iso_calendar()
+
+	if lpad:
+		if lpad_num >= 0:
+			iso_week_str = str(iso_week).zfill(lpad)
+			return iso_week_str
+		else:
+			raise ValueError('lpad must be an integer greater than 0')
+
+	return (iso_week, iso_year)
 
 def gen_file_name(prefix:str, infile_name:str, infile_type:str, outfile_type:str, suffix:str):
 	file_name = infile_name.replace(infile_type, '')
