@@ -1,4 +1,4 @@
-# pygcp
+# pygcp 1.2.4
 
 **[TestPyPI Page](https://test.pypi.org/project/pygcp/)**
 
